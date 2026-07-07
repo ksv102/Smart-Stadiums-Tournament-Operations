@@ -100,8 +100,10 @@ function renderStaff(staff) {
 }
 
 async function refreshAll() {
-  const state = await api('/api/state');
-  const { plan, briefing } = await api('/api/briefing');
+  // Single round trip instead of two: state, plan, and briefing all come
+  // back together, and the briefing itself is cached server-side when
+  // nothing about the plan has changed since the last poll.
+  const { state, plan, briefing } = await api('/api/dashboard');
 
   renderGates(plan.gateStatus);
   renderActions(plan.actions);

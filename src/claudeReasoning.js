@@ -18,6 +18,18 @@ try {
   Anthropic = null;
 }
 
+// Cache the last narration by a fingerprint of the plan's actions, so a UI
+// that polls frequently doesn't trigger a fresh (and, with an API key, a
+// billed) Claude call when nothing about the situation has changed.
+const CACHE_TTL_MS = 15_000;
+let lastCache = { fingerprint: null, result: null, expiresAt: 0 };
+
+function fingerprintPlan(plan) {
+  return JSON.stringify(
+    plan.actions.map((a) => [a.type, a.target, a.priority, a.assignedStaffId ?? null])
+  );
+}
+
 function templateBriefing(plan) {
   if (plan.actions.length === 0) {
     return 'All gates and incidents are within normal parameters. No action required.';
@@ -32,6 +44,12 @@ async function narrate(plan) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || !Anthropic) {
     return { text: templateBriefing(plan), source: 'template' };
+  }
+
+  const fingerprint = fingerprintPlan(plan);
+  const now = Date.now();
+  if (lastCache.fingerprint === fingerprint && now < lastCache.expiresAt) {
+    return { ...lastCache.result, cached: true };
   }
 
   try {
@@ -57,7 +75,9 @@ async function narrate(plan) {
       .join('\n')
       .trim();
 
-    return { text: text || templateBriefing(plan), source: 'claude' };
+    const result = { text: text || templateBriefing(plan), source: 'claude' };
+    lastCache = { fingerprint, result, expiresAt: now + CACHE_TTL_MS };
+    return result;
   } catch (err) {
     // Never let a narration failure break the operational tool.
     return { text: templateBriefing(plan), source: 'template-fallback', error: err.message };

@@ -103,10 +103,35 @@ npm test                 # runs the rules-engine and narration test suites
 
 ## Security notes
 
+- **Security headers** are set via `helmet`, including a restrictive
+  Content-Security-Policy, `X-Content-Type-Options: nosniff`, and
+  `X-Frame-Options: SAMEORIGIN`.
+- **Rate limiting**: all `/api` routes are capped at 120 req/min per client,
+  and mutating routes (incidents, staff status, tick, reset) are additionally
+  capped at 20 req/min to blunt abuse/spam.
+- **Optional API-key auth on mutating routes**: set `ORION_API_KEY` in the
+  environment and every write (`POST`) request must include a matching
+  `x-api-key` header (checked with a constant-time comparison). Reads stay
+  open either way, since a dashboard is meant to be viewed. Left unset, the
+  server logs a clear warning at boot and runs in open demo mode — this is
+  what lets the public deployed demo stay reviewable without extra setup,
+  while giving any real deployment a one-line way to lock down writes.
 - Incident payloads are validated against a fixed allow-list of types and
   severities server-side before touching state.
 - Request bodies are size-limited (100kb) to reduce abuse surface on a
   publicly reachable demo.
-- No API key is ever sent to the client; the Anthropic key lives in
-  server-side environment variables only and `.env` is gitignored.
+- No API key is ever sent to the client; both `ORION_API_KEY` and
+  `ANTHROPIC_API_KEY` live in server-side environment variables only, and
+  `.env` is gitignored.
 - A central error handler prevents stack traces from leaking to clients.
+
+## Efficiency notes
+
+- `/api/dashboard` consolidates state, plan, and briefing into a single
+  response, replacing what was previously two separate round trips per UI
+  refresh.
+- The narration layer caches its last result by a fingerprint of the action
+  plan (15s TTL): if nothing about the gates/incidents/staff has materially
+  changed, repeated polls reuse the cached briefing instead of recomputing it
+  or re-calling the Claude API.
+- Responses are gzip-compressed via `compression`.
