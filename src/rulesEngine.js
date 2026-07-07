@@ -118,11 +118,7 @@ function buildActionPlan(state) {
     .filter((i) => i.status === 'open')
     .map((incident) => {
       const evalResult = evaluateIncident(incident);
-      const staff = selectStaff(
-        state.staff,
-        evalResult.requiredRole,
-        incident.location
-      );
+      const staff = selectStaff(state.staff, evalResult.requiredRole, incident.location);
       return {
         type: staff ? 'DISPATCH_STAFF' : 'REQUEST_MUTUAL_AID',
         target: incident.id,

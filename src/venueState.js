@@ -16,12 +16,48 @@ function seed() {
       { id: 'gate-d', name: 'Gate D (West)', capacity: 2500, currentOccupancy: 2450 },
     ],
     staff: [
-      { id: 'stf-1', name: 'A. Reyes', role: 'medical', status: 'available', location: { x: 10, y: 5 } },
-      { id: 'stf-2', name: 'J. Okafor', role: 'security', status: 'available', location: { x: 40, y: 20 } },
-      { id: 'stf-3', name: 'M. Singh', role: 'steward', status: 'available', location: { x: 25, y: 15 } },
-      { id: 'stf-4', name: 'L. Fischer', role: 'security', status: 'busy', location: { x: 5, y: 30 } },
-      { id: 'stf-5', name: 'R. Costa', role: 'steward', status: 'available', location: { x: 45, y: 5 } },
-      { id: 'stf-6', name: 'P. Novak', role: 'medical', status: 'busy', location: { x: 30, y: 35 } },
+      {
+        id: 'stf-1',
+        name: 'A. Reyes',
+        role: 'medical',
+        status: 'available',
+        location: { x: 10, y: 5 },
+      },
+      {
+        id: 'stf-2',
+        name: 'J. Okafor',
+        role: 'security',
+        status: 'available',
+        location: { x: 40, y: 20 },
+      },
+      {
+        id: 'stf-3',
+        name: 'M. Singh',
+        role: 'steward',
+        status: 'available',
+        location: { x: 25, y: 15 },
+      },
+      {
+        id: 'stf-4',
+        name: 'L. Fischer',
+        role: 'security',
+        status: 'busy',
+        location: { x: 5, y: 30 },
+      },
+      {
+        id: 'stf-5',
+        name: 'R. Costa',
+        role: 'steward',
+        status: 'available',
+        location: { x: 45, y: 5 },
+      },
+      {
+        id: 'stf-6',
+        name: 'P. Novak',
+        role: 'medical',
+        status: 'busy',
+        location: { x: 30, y: 35 },
+      },
     ],
     incidents: [],
     incidentSeq: 1,
@@ -46,10 +82,7 @@ function tick() {
   const s = getState();
   s.gates.forEach((g) => {
     const drift = Math.round((Math.random() - 0.35) * 150);
-    g.currentOccupancy = Math.max(
-      0,
-      Math.min(g.capacity, g.currentOccupancy + drift)
-    );
+    g.currentOccupancy = Math.max(0, Math.min(g.capacity, g.currentOccupancy + drift));
   });
   return s;
 }
@@ -61,7 +94,11 @@ function addIncident({ type, severity, locationLabel, x, y }) {
     type,
     severity,
     status: 'open',
-    location: { label: locationLabel, x: x ?? Math.random() * 50, y: y ?? Math.random() * 40 },
+    location: {
+      label: locationLabel,
+      x: x ?? Math.random() * 50,
+      y: y ?? Math.random() * 40,
+    },
     reportedAt: new Date().toISOString(),
   };
   s.incidents.push(incident);

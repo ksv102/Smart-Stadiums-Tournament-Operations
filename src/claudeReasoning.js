@@ -80,7 +80,11 @@ async function narrate(plan) {
     return result;
   } catch (err) {
     // Never let a narration failure break the operational tool.
-    return { text: templateBriefing(plan), source: 'template-fallback', error: err.message };
+    return {
+      text: templateBriefing(plan),
+      source: 'template-fallback',
+      error: err.message,
+    };
   }
 }
 

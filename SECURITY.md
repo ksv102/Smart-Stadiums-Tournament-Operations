@@ -30,8 +30,23 @@ be, since that's the point of the challenge.
 - **No stack traces leaked to clients**: a central error handler returns a
   generic 500 and logs the real error server-side only.
 - **CI-enforced dependency auditing**: every push runs `npm audit
-  --audit-level=high` (see `.github/workflows/ci.yml`), so known-vulnerable
+--audit-level=high` (see `.github/workflows/ci.yml`), so known-vulnerable
   dependencies fail the build rather than going unnoticed.
+- **Automated dependency updates** via Dependabot (`.github/dependabot.yml`),
+  checking for new npm advisories weekly.
+- **Explicit CORS policy**: cross-origin requests are denied outright
+  (`origin: false`) rather than left to Express's implicit default — this is
+  a same-origin, single-tenant dashboard and states that as policy, not
+  omission.
+- **Explicit Permissions-Policy header** disabling browser features this app
+  never uses (camera, microphone, geolocation, payment, USB), rather than
+  leaving them unspecified.
+- **Fail-fast startup validation** (`src/envCheck.js`): the server refuses to
+  start if `PORT` is out of range, `ORION_API_KEY` is set but too weak to be
+  meaningful, `ANTHROPIC_API_KEY` doesn't look like a real key, or `NODE_ENV`
+  is unrecognized — misconfiguration is loud, not silent.
+- **RFC 9116 `security.txt`** at `/.well-known/security.txt` with a
+  standard contact path and link to this document.
 
 ## Known, accepted limitations
 
