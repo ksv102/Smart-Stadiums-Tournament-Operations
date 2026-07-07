@@ -1,0 +1,67 @@
+'use strict';
+
+/**
+ * Narration layer. Takes an ALREADY-DECIDED action plan from rulesEngine.js
+ * and produces a short, staff-facing briefing in plain language.
+ *
+ * This module never chooses actions — it only explains actions it's given.
+ * If no API key is configured, or the API call fails for any reason, it
+ * falls back to a deterministic template so the assistant keeps working
+ * (operations tooling should never hard-fail because a network call did).
+ */
+
+let Anthropic = null;
+try {
+  // Lazy require so the app still boots if the package isn't installed yet.
+  Anthropic = require('@anthropic-ai/sdk');
+} catch {
+  Anthropic = null;
+}
+
+function templateBriefing(plan) {
+  if (plan.actions.length === 0) {
+    return 'All gates and incidents are within normal parameters. No action required.';
+  }
+  const lines = plan.actions
+    .slice(0, 5)
+    .map((a, i) => `${i + 1}. [${a.type}] ${a.reason}`);
+  return `Priority actions:\n${lines.join('\n')}`;
+}
+
+async function narrate(plan) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey || !Anthropic) {
+    return { text: templateBriefing(plan), source: 'template' };
+  }
+
+  try {
+    const client = new Anthropic({ apiKey });
+    const prompt = [
+      'You are briefing a stadium operations coordinator during a live match.',
+      'The action plan below was already decided by a rules engine — do not',
+      'change, add, or remove any action. Just summarize it clearly in under',
+      '80 words, in priority order, for a coordinator who has seconds to read it.',
+      '',
+      JSON.stringify(plan, null, 2),
+    ].join('\n');
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 300,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const text = response.content
+      .filter((block) => block.type === 'text')
+      .map((block) => block.text)
+      .join('\n')
+      .trim();
+
+    return { text: text || templateBriefing(plan), source: 'claude' };
+  } catch (err) {
+    // Never let a narration failure break the operational tool.
+    return { text: templateBriefing(plan), source: 'template-fallback', error: err.message };
+  }
+}
+
+module.exports = { narrate, templateBriefing };

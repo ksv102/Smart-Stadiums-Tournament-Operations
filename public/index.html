@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ORION — Stadium Operations</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">◎</span>
+    <div>
+      <h1>ORION</h1>
+      <p class="subtitle">Stadium Operations &amp; Crowd Safety Assistant</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <span id="clock" class="clock" aria-live="off"></span>
+    <button id="tick-btn" class="btn" type="button">Advance simulation</button>
+    <button id="reset-btn" class="btn btn-ghost" type="button">Reset venue</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="panel" aria-labelledby="gates-heading">
+    <h2 id="gates-heading">Gate crowd levels</h2>
+    <div id="gates-grid" class="gates-grid" role="list"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="plan-heading">
+    <h2 id="plan-heading">Recommended actions</h2>
+    <p id="briefing" class="briefing" aria-live="polite">Loading briefing…</p>
+    <ol id="actions-list" class="actions-list"></ol>
+  </section>
+
+  <section class="panel" aria-labelledby="incidents-heading">
+    <h2 id="incidents-heading">Incidents</h2>
+    <form id="incident-form" class="incident-form">
+      <div class="field">
+        <label for="inc-type">Type</label>
+        <select id="inc-type" required>
+          <option value="medical">Medical</option>
+          <option value="fire">Fire</option>
+          <option value="security_threat">Security threat</option>
+          <option value="crowd_crush">Crowd crush</option>
+          <option value="lost_person">Lost person</option>
+          <option value="facilities">Facilities</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="inc-severity">Severity</label>
+        <select id="inc-severity" required>
+          <option value="minor">Minor</option>
+          <option value="moderate">Moderate</option>
+          <option value="severe">Severe</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+      <div class="field field-grow">
+        <label for="inc-location">Location</label>
+        <input id="inc-location" type="text" placeholder="e.g. Section 114 concourse" required maxlength="99" />
+      </div>
+      <button type="submit" class="btn">Report incident</button>
+    </form>
+    <ul id="incidents-list" class="incidents-list" aria-live="polite"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="staff-heading">
+    <h2 id="staff-heading">Staff roster</h2>
+    <ul id="staff-list" class="staff-list"></ul>
+  </section>
+</main>
+
+<div id="sr-status" class="sr-only" role="status" aria-live="assertive"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

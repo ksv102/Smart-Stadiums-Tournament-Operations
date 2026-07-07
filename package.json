@@ -1,0 +1,17 @@
+{
+  "name": "stadium-ops-orion",
+  "version": "1.0.0",
+  "description": "ORION - Stadium Operations & Crowd Safety Assistant for FIFA World Cup 2026 venues",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
+    "express": "^4.19.2"
+  }
+}
