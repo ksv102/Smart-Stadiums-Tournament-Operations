@@ -55,10 +55,12 @@ fallback behavior without needing a live API key.
 ## How the solution works
 
 - **Backend** (`server.js` + `src/`): a small Express API over an in-memory
-  venue state (`src/venueState.js`) that simulates four stadium gates and six
-  staff members. Endpoints let you inspect state, advance the simulation,
-  report/resolve incidents, change staff availability, and fetch the current
-  action plan and briefing.
+  venue state (`src/venueState.js`). Routes are split by resource into
+  `src/routes/venue.js`, `src/routes/incidents.js`, and `src/routes/staff.js`,
+  with shared concerns (rate limiting, auth, ID/payload validation, async
+  error handling) factored into `src/middleware/`. Endpoints let you inspect
+  state, advance the simulation, report/resolve incidents, change staff
+  availability, and fetch the current action plan and briefing.
 - **Frontend** (`public/`): a single-page control-room dashboard (no
   framework, no build step) showing live gate occupancy, the prioritized
   action list, an incident report form, and the staff roster. It polls the
@@ -102,6 +104,8 @@ npm test                 # runs the rules-engine and narration test suites
 - Respects `prefers-reduced-motion`.
 
 ## Security notes
+
+See [`SECURITY.md`](./SECURITY.md) for the full write-up. Summary:
 
 - **Security headers** are set via `helmet`, including a restrictive
   Content-Security-Policy, `X-Content-Type-Options: nosniff`, and

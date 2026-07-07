@@ -1,9 +1,12 @@
 {
   "name": "stadium-ops-orion",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "ORION - Stadium Operations & Crowd Safety Assistant for FIFA World Cup 2026 venues",
   "main": "server.js",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
