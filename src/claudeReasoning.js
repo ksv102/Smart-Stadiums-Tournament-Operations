@@ -24,12 +24,24 @@ try {
 const CACHE_TTL_MS = 15_000;
 let lastCache = { fingerprint: null, result: null, expiresAt: 0 };
 
+/**
+ * Reduces an action plan to a stable string used to detect whether the
+ * situation has meaningfully changed since the last narration.
+ * @param {{actions: object[]}} plan
+ * @returns {string}
+ */
 function fingerprintPlan(plan) {
   return JSON.stringify(
     plan.actions.map((a) => [a.type, a.target, a.priority, a.assignedStaffId ?? null])
   );
 }
 
+/**
+ * Deterministic, no-network briefing derived directly from the plan.
+ * Used whenever Claude isn't configured or a live call fails.
+ * @param {{actions: {type: string, reason: string}[]}} plan
+ * @returns {string}
+ */
 function templateBriefing(plan) {
   if (plan.actions.length === 0) {
     return 'All gates and incidents are within normal parameters. No action required.';
@@ -40,6 +52,14 @@ function templateBriefing(plan) {
   return `Priority actions:\n${lines.join('\n')}`;
 }
 
+/**
+ * Produces a staff-facing briefing for an already-decided action plan.
+ * Never chooses actions itself — only explains the ones it's given — and
+ * always falls back to templateBriefing() if Claude isn't configured, the
+ * cache is stale-but-unchanged, or the API call fails for any reason.
+ * @param {{actions: object[]}} plan
+ * @returns {Promise<{text: string, source: string, cached?: boolean, error?: string}>}
+ */
 async function narrate(plan) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || !Anthropic) {

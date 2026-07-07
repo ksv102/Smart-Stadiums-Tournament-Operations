@@ -33,6 +33,11 @@ const ROLE_FOR_INCIDENT = {
   facilities: 'steward',
 };
 
+/**
+ * Classifies an occupancy ratio into a crowd-density band.
+ * @param {number} occupancyRatio 0.0–1.0 (or above, if over capacity)
+ * @returns {'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL'}
+ */
 function crowdLevel(occupancyRatio) {
   if (occupancyRatio >= CROWD_THRESHOLDS.HIGH) return 'CRITICAL';
   if (occupancyRatio >= CROWD_THRESHOLDS.MODERATE) return 'HIGH';
@@ -42,6 +47,8 @@ function crowdLevel(occupancyRatio) {
 
 /**
  * Evaluate a single gate and return zero or more recommended actions.
+ * @param {{id: string, name: string, capacity: number, currentOccupancy: number}} gate
+ * @returns {{level: string, ratio: number, actions: object[]}}
  */
 function evaluateGate(gate) {
   const ratio = gate.currentOccupancy / gate.capacity;
@@ -71,6 +78,8 @@ function evaluateGate(gate) {
 
 /**
  * Evaluate an incident and determine the required response role and priority.
+ * @param {{type: string, severity: string}} incident
+ * @returns {{requiredRole: string, priority: number, escalate: boolean}}
  */
 function evaluateIncident(incident) {
   const weight = INCIDENT_WEIGHT[incident.severity] ?? 1;
@@ -86,7 +95,10 @@ function evaluateIncident(incident) {
 /**
  * Given available staff and a required role, pick the best candidate:
  * available, matching role, closest to the incident location.
- * Returns null if nobody suitable is free.
+ * @param {object[]} staffRoster
+ * @param {string} requiredRole
+ * @param {{x: number, y: number}} location
+ * @returns {object | null} the nearest match, or null if nobody suitable is free.
  */
 function selectStaff(staffRoster, requiredRole, location) {
   const candidates = staffRoster.filter(
@@ -103,12 +115,19 @@ function selectStaff(staffRoster, requiredRole, location) {
   return candidates[0];
 }
 
+/**
+ * @param {{x: number, y: number}} a
+ * @param {{x: number, y: number}} b
+ * @returns {number} Euclidean distance between two venue coordinates.
+ */
 function distance(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
 /**
  * Top-level: build a prioritized action plan from full venue state.
+ * @param {object} state venue state with gates, staff, and incidents.
+ * @returns {{generatedAt: string, gateStatus: object[], actions: object[]}}
  */
 function buildActionPlan(state) {
   const gateResults = state.gates.map((g) => ({ gate: g, ...evaluateGate(g) }));

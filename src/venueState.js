@@ -7,6 +7,11 @@
 
 let state = null;
 
+/**
+ * (Re)seeds the venue to its initial demo state: four gates and six staff
+ * members, no open incidents.
+ * @returns {object} the freshly seeded state.
+ */
 function seed() {
   state = {
     gates: [
@@ -65,11 +70,17 @@ function seed() {
   return state;
 }
 
+/**
+ * @returns {object} the current venue state, seeding it on first call.
+ */
 function getState() {
   if (!state) seed();
   return state;
 }
 
+/**
+ * @returns {object} the venue reset back to its seeded initial state.
+ */
 function reset() {
   return seed();
 }
@@ -87,6 +98,11 @@ function tick() {
   return s;
 }
 
+/**
+ * Records a newly-reported incident and adds it to the venue's open list.
+ * @param {{type: string, severity: string, locationLabel: string, x?: number, y?: number}} params
+ * @returns {object} the created incident.
+ */
 function addIncident({ type, severity, locationLabel, x, y }) {
   const s = getState();
   const incident = {
@@ -105,6 +121,11 @@ function addIncident({ type, severity, locationLabel, x, y }) {
   return incident;
 }
 
+/**
+ * Marks an incident resolved by id.
+ * @param {string} id
+ * @returns {object | null} the updated incident, or null if not found.
+ */
 function resolveIncident(id) {
   const s = getState();
   const incident = s.incidents.find((i) => i.id === id);
@@ -114,6 +135,12 @@ function resolveIncident(id) {
   return incident;
 }
 
+/**
+ * Updates a staff member's availability.
+ * @param {string} id
+ * @param {'available' | 'busy'} status
+ * @returns {object | null} the updated staff member, or null if not found.
+ */
 function setStaffStatus(id, status) {
   const s = getState();
   const staff = s.staff.find((st) => st.id === id);
